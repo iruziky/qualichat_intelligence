@@ -3,6 +3,8 @@ name = "qualichat_intelligence"
 version = "0.1.0"
 description = "Intelligent backend for Qualichat"
 authors = ["Your Name <you@example.com>"]
+packages = [{include = "app"}]
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -12,13 +14,9 @@ litellm = "^1.34.2"
 chromadb = "^0.4.24"
 loguru = "^0.7.2"
 pydantic = "^2.7.1"
+pydantic-settings = "^2.2.1"
 python-dotenv = "^1.0.1"
-typer = "^0.9.0"
+pysqlite3-binary = "^0.5.2"
+posthog = ">=2.4.0,<6.0.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2"
-# TODO: Add development dependencies here.
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"

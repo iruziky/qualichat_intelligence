@@ -21,5 +21,5 @@ class EmbeddingsService:
             A list of embeddings, where each embedding is a list of floats.
         """
         response = embedding(model=self.model, input=texts)
-        return [item.embedding for item in response.data]
+        return [item["embedding"] for item in response.data]
 
