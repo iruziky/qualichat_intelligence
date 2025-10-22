@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "qualichat_intelligence"
+version = "0.1.0"
+description = "Intelligent backend for Qualichat"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+# TODO: Add project dependencies here.
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2"
+# TODO: Add development dependencies here.
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
