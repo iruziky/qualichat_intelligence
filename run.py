@@ -11,6 +11,7 @@ sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 from app.graphs.conversation_graph import ConversationGraph
 from app.core.logger import logger
 from app.repositories.history_repository import HistoryRepository
+from app.models.history import HistoryItem
 
 
 def main():
@@ -46,7 +47,8 @@ def main():
             answer = result.get("answer", "No answer found.")
 
             # Save the new interaction to the repository
-            history_repo.add_interaction(user_message=question, bot_response=answer)
+            history_item = HistoryItem(user_message=question, bot_response=answer)
+            history_repo.add_interaction(history_item)
 
             print("\nAssistant:")
             print(answer)

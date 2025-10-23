@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Core RAG (Retrieval-Augmented Generation) pipeline."""
-from typing import Any, Dict, List
+from typing import List
 from app.services.retrieval_service import RetrievalService
 from app.services.llm_service import LLMService
+from app.models.history import HistoryItem
 
 
 class RAGPipeline:
@@ -12,7 +13,7 @@ class RAGPipeline:
         self.retrieval_service = RetrievalService()
         self.llm_service = LLMService()
 
-    def execute(self, query: str, history: List[Dict[str, Any]] = None) -> str:
+    def execute(self, query: str, history: List[HistoryItem] = None) -> str:
         """
         Execute the RAG pipeline.
 
@@ -24,7 +25,7 @@ class RAGPipeline:
             The generated answer.
         """
         context_documents = self.retrieval_service.retrieve_documents(query)
-        context = "\n".join(context_documents)
+        context = "\n".join([doc.content for doc in context_documents])
 
         prompt = f"""
         Based on the following context, answer the user's question.
@@ -40,9 +41,9 @@ class RAGPipeline:
         messages = []
         if history:
             for interaction in history:
-                messages.append({"role": "user", "content": interaction["user_message"]})
+                messages.append({"role": "user", "content": interaction.user_message})
                 messages.append(
-                    {"role": "assistant", "content": interaction["bot_response"]}
+                    {"role": "assistant", "content": interaction.bot_response}
                 )
 
         messages.append({"role": "user", "content": prompt})

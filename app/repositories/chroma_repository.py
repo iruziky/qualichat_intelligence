@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """Repository for interacting with ChromaDB."""
 import chromadb
-from typing import Any, List, Dict
+from typing import List
 
 from app.core.config import settings
 from app.repositories.base_repository import BaseRepository
 from app.services.embeddings_service import EmbeddingsService
+from app.models.document import Document
 
 
 class ChromaRepository(BaseRepository):
@@ -16,17 +17,17 @@ class ChromaRepository(BaseRepository):
         self.collection = self.client.get_or_create_collection(name=collection_name)
         self.embeddings_service = EmbeddingsService()
 
-    def add(self, items: List[Dict[str, Any]]):
+    def add(self, documents: List[Document]):
         """
-        Add items to the ChromaDB collection.
+        Add documents to the ChromaDB collection.
 
         Args:
-            items: A list of dictionaries, each with 'text' and 'metadata'.
+            documents: A list of Document objects.
         """
-        texts = [item["text"] for item in items]
+        texts = [doc.content for doc in documents]
         embeddings = self.embeddings_service.create_embeddings(texts)
-        metadatas = [item["metadata"] for item in items]
-        ids = [str(hash(text)) for text in texts]
+        metadatas = [doc.metadata for doc in documents]
+        ids = [doc.id for doc in documents]
 
         self.collection.add(
             embeddings=embeddings,
@@ -35,7 +36,7 @@ class ChromaRepository(BaseRepository):
             ids=ids,
         )
 
-    def query(self, query_text: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    def query(self, query_text: str, top_k: int = 5) -> List[Document]:
         """
         Query the ChromaDB collection for similar documents.
 
@@ -44,14 +45,22 @@ class ChromaRepository(BaseRepository):
             top_k: The number of results to return.
 
         Returns:
-            A list of documents that are similar to the query text.
+            A list of Document objects that are similar to the query text.
         """
         query_embedding = self.embeddings_service.create_embeddings([query_text])[0]
         results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=top_k,
         )
-        return results["documents"][0]
+
+        documents = []
+        for i, doc_content in enumerate(results["documents"][0]):
+            doc_id = results["ids"][0][i]
+            metadata = results["metadatas"][0][i]
+            documents.append(
+                Document(id=doc_id, content=doc_content, metadata=metadata)
+            )
+        return documents
 
     def clear(self):
         """Clear all items from the collection."""

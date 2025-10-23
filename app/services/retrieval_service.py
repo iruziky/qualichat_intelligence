@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Service for retrieving relevant documents."""
-from typing import List, Dict, Any
+from typing import List
 from app.repositories.chroma_repository import ChromaRepository
+from app.models.document import Document
 
 
 class RetrievalService:
@@ -10,7 +11,7 @@ class RetrievalService:
     def __init__(self):
         self.repository = ChromaRepository()
 
-    def retrieve_documents(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    def retrieve_documents(self, query: str, top_k: int = 5) -> List[Document]:
         """
         Retrieve relevant documents for a given query.
 
@@ -19,7 +20,7 @@ class RetrievalService:
             top_k: The number of documents to retrieve.
 
         Returns:
-            A list of relevant documents.
+            A list of relevant Document objects.
         """
         return self.repository.query(query_text=query, top_k=top_k)
 

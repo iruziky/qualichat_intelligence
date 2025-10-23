@@ -1,0 +1,22 @@
+[
+  {
+    "user_message": "olá",
+    "bot_response": "Olá, como posso ajudá-lo hoje?",
+    "metadata": {}
+  },
+  {
+    "user_message": "Qual foi minha última mensagem?",
+    "bot_response": "Desculpe, como sou um modelo de inteligência artificial, não tenho acesso às suas mensagens anteriores. Você pode me fazer outra pergunta ou pedir algo?",
+    "metadata": {}
+  },
+  {
+    "user_message": "Eu falei \"olá\" ou \"oi\"?",
+    "bot_response": "Você disse \"olá\".",
+    "metadata": {}
+  },
+  {
+    "user_message": "tem certeza? e depois disso?",
+    "bot_response": "Desculpe, a sua pergunta após \"olá\" foi \"Qual foi minha última mensagem?\".",
+    "metadata": {}
+  }
+]

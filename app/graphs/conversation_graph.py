@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """Graph for managing conversations."""
-from typing import TypedDict, Annotated, List, Dict, Any
+from typing import TypedDict, List
 from langgraph.graph import StateGraph, END
 
 from app.graphs.base_graph import BaseGraph
 from app.services.retrieval_service import RetrievalService
 from app.services.rag_pipeline import RAGPipeline
+from app.models.history import HistoryItem
 
 
 class GraphState(TypedDict):
@@ -13,7 +14,7 @@ class GraphState(TypedDict):
     question: str
     context: str
     answer: str
-    history: List[Dict[str, Any]]
+    history: List[HistoryItem]
 
 
 class ConversationGraph(BaseGraph):
