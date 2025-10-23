@@ -1,148 +1,103 @@
-# Relatório de Auditoria de Código Detalhada: Qualichat Intelligence
+# Relatório de Auditoria Focada: Padrões de Projeto e Arquitetura
 
 ## Visão Geral
-Esta auditoria analisa cada arquivo do projeto para identificar violações de padrões de projeto, gambiarras, más práticas e riscos. A análise revelou uma arquitetura com boas intenções, mas com **violações significativas do padrão de Injeção de Dependência e da separação de camadas**, resultando em alto acoplamento e dificultando a testabilidade e manutenção.
+Esta auditoria focada analisa a implementação dos padrões **Factory, Repository e Model Layer**, identificando violações de responsabilidade, acoplamento indevido e falhas na aplicação de **Injeção de Dependência (DI)**. A análise confirma que a estrutura de camadas existe, mas é minada por um **forte acoplamento** causado pela instanciação direta de dependências, o que representa o maior risco arquitetural do projeto.
 
 ---
 
-### Arquivo: `run.py`
+### Arquivo: `run.py` (Ponto de Entrada)
 
-- **Linha(s):** 4-8
-  - **Tipo:** Gambiarra / Má Prática
-  - **Descrição:** O patch de compatibilidade do `sqlite3` está duplicado. Este código é crítico para o funcionamento do ChromaDB no ambiente atual, mas sua presença em múltiplos scripts (`run.py`, `ingest.py`) viola o princípio DRY.
-  - **Sugestão:** Centralizar o patch em um único arquivo (`app/core/patches.py`) e importá-lo no início de cada ponto de entrada.
-
-- **Linha(s):** 12
-  - **Tipo:** Má Prática
-  - **Descrição:** A variável `SOURCE_DOCUMENT` está "hardcoded" para fins de teste. Isso é perigoso, pois pode ser esquecido e enviado para produção, fazendo com que o sistema opere em um subconjunto de dados inesperadamente.
-  - **Sugestão:** Mover essa lógica para um argumento de linha de comando ou carregá-la de uma variável de ambiente de desenvolvimento, deixando claro que é uma configuração de depuração.
-
-- **Linha(s):** 23
-  - **Tipo:** Violação de Design Pattern (Injeção de Dependência)
-  - **Descrição:** O `HistoryRepository` e o `ConversationGraph` são instanciados diretamente (`history_repo = HistoryRepository()`, `graph = ConversationGraph()`). Isso acopla o `main` às implementações concretas, dificultando testes e a substituição de componentes.
-  - **Sugestão:** Utilizar uma `Factory` para construir e fornecer todas as dependências necessárias para o `main`, aplicando o padrão de Injeção de Dependência.
-
-- **Linha(s):** 61
-  - **Tipo:** Risco / Má Prática
-  - **Descrição:** O bloco `except Exception as e:` é muito genérico. Ele captura qualquer erro possível, o que pode mascarar bugs específicos e dificultar a depuração.
-  - **Sugestão:** Capturar exceções mais específicas (ex: `FileNotFoundError`, `ValidationError` da Pydantic) para fornecer feedback mais claro ao usuário e logs mais precisos.
+- **Linha(s):** 23, 24
+- **Tipo:** Violação Grave de Design Pattern (Injeção de Dependência)
+- **Descrição:** `HistoryRepository` e `ConversationGraph` são instanciados diretamente (`history_repo = HistoryRepository()`). O ponto de entrada da aplicação está fortemente acoplado às implementações concretas de seus componentes principais. Isso impede a testabilidade (não é possível "mockar" o grafo ou o repositório) e a flexibilidade.
+- **Sugestão:** O `main` deveria receber suas dependências de uma camada de composição (um "Composition Root"), que seria o único lugar onde a `Factory` é usada para construir a árvore de objetos.
 
 ---
 
-### Arquivo: `ingest.py`
-
-- **Linha(s):** 5-9
-  - **Tipo:** Gambiarra / Má Prática
-  - **Descrição:** Mesma duplicação do patch do `sqlite3` encontrada em `run.py`.
-  - **Sugestão:** Centralizar o patch.
+### Arquivo: `ingest.py` (Ponto de Entrada)
 
 - **Linha(s):** 21
-  - **Tipo:** Violação de Design Pattern (Injeção de Dependência)
-  - **Descrição:** O `IngestionService` é instanciado diretamente.
-  - **Sugestão:** Usar a `Factory` para criar a instância do serviço.
+- **Tipo:** Violação Grave de Design Pattern (Injeção de Dependência)
+- **Descrição:** `IngestionService` é instanciado diretamente. Mesma violação encontrada em `run.py`.
+- **Sugestão:** Utilizar a `Factory` para construir e fornecer a instância do `IngestionService`.
+
+---
+
+### Arquivo: `app/core/factory.py` (Factory Pattern)
+
+- **Análise Geral:** A `ServiceFactory` existe, mas está **subutilizada e incompleta**. Ela cria apenas alguns componentes de forma isolada e não gerencia a **injeção de dependências** entre eles. Uma Factory robusta deveria ser capaz de construir um objeto complexo (como o `ConversationGraph`) com todas as suas dependências já resolvidas e injetadas.
+- **Sugestão:** A `Factory` deveria ser o "orquestrador" da construção de objetos. Por exemplo, `create_conversation_graph()` deveria instanciar internamente o `RAGPipeline` e o `RetrievalService` (que por sua vez teriam suas dependências injetadas) e passá-los para o construtor do `ConversationGraph`.
 
 ---
 
 ### Arquivo: `app/core/document_factory.py`
 
-- **Linha(s):** 22
-  - **Tipo:** Má Prática
-  - **Descrição:** Os parâmetros `chunk_size` e `chunk_overlap` estão "hardcoded" com valores padrão.
-  - **Sugestão:** Mover esses valores para o arquivo de configuração central (`app/core/config.py`) para que possam ser gerenciados externamente.
-
-- **Linha(s):** 69
-  - **Tipo:** Risco / Má Prática
-  - **Descrição:** Uso de `except Exception as e:`, que é muito genérico.
-  - **Sugestão:** Capturar exceções específicas dos loaders da LangChain ou de operações de arquivo.
+- **Análise Geral:** O nome "Factory" aqui é usado no sentido de "criador de objetos", não no padrão de DI. A implementação está correta para sua finalidade: encapsula a lógica de criação de `Document` a partir de arquivos.
+- **Pontos de Melhoria (Má Prática):**
+    - **Linha 22:** `chunk_size` e `chunk_overlap` estão "hardcoded", violando o princípio de configuração externa.
+    - **Sugestão:** Mover para `app/core/config.py` e injetá-los no construtor da `DocumentFactory`.
 
 ---
 
-### Arquivo: `app/core/factory.py`
+### Arquivos: `app/models/*.py` (Model Layer)
 
-- **Análise Geral:** O arquivo está bem implementado e cumpre seu propósito. No entanto, ele está **subutilizado**, pois o restante do código raramente o usa, preferindo a instanciação direta (ver violações de DI em outros arquivos). A factory também poderia ser expandida para gerenciar a injeção de dependências de forma mais completa.
+- **Análise Geral:** **Implementação Correta.** Todos os modelos (`HistoryItem`, `Document`, `Embedding`) cumprem perfeitamente sua responsabilidade. Eles contêm apenas a definição da estrutura de dados, tipos e validações, sem qualquer lógica de negócio ou persistência.
+
+---
+
+### Arquivo: `app/repositories/chroma_repository.py` (Repository Pattern)
+
+- **Linha(s):** 17
+- **Tipo:** Violação Gravíssima de Arquitetura de Camadas
+- **Descrição:** O `ChromaRepository` (camada de dados) instancia e depende do `EmbeddingsService` (camada de serviço). Esta é a violação mais crítica encontrada. **Um repositório NUNCA deve depender de um serviço.** Sua única responsabilidade é interagir com a fonte de dados (neste caso, ChromaDB). A lógica de negócio (como gerar um embedding) pertence à camada de serviço.
+- **Sugestão:** A responsabilidade de gerar embeddings deve ser movida para a camada de serviço. O fluxo correto seria:
+    1. Um serviço (ex: `IngestionService`) recebe um `Document`.
+    2. O serviço chama o `EmbeddingsService` para obter o vetor.
+    3. O serviço passa o `Document` e o vetor para o `ChromaRepository`, cujos métodos `add` e `query` deveriam aceitar os embeddings diretamente, em vez de calculá-los.
+
+---
+
+### Arquivo: `app/repositories/history_repository.py` (Repository Pattern)
+
+- **Análise Geral:** **Implementação Correta do Padrão.** O repositório abstrai com sucesso a lógica de persistência (leitura/escrita de JSON). Ele não tem dependências indevidas e cumpre sua responsabilidade única.
+- **Ponto de Risco (Implementação):** A escolha de JSON como backend é uma **má prática** para qualquer aplicação que não seja um protótipo simples, devido à ineficiência e falta de segurança contra concorrência.
+
+---
+
+### Arquivo: `app/repositories/document_repository.py` (Repository Pattern)
+
+- **Análise Geral:** **Implementação Correta do Padrão.** Abstrai perfeitamente o acesso ao sistema de arquivos para buscar documentos, tratando-o como uma fonte de dados.
+
+---
+
+### Arquivos: `app/services/*.py` (Service Layer)
+
+- **Análise Geral:** Todos os serviços (`IngestionService`, `RAGPipeline`, `RetrievalService`) violam o padrão de Injeção de Dependência.
+- **Tipo:** Violação de Design Pattern (Injeção de Dependência)
+- **Descrição:** Em cada serviço, suas dependências (outros serviços ou repositórios) são instanciadas diretamente nos construtores.
+    - `IngestionService` (linhas 22-24) cria `DocumentRepository`, `ChromaRepository`, `DocumentFactory`.
+    - `RAGPipeline` (linhas 14-15) cria `RetrievalService`, `LLMService`.
+    - `RetrievalService` (linha 12) cria `ChromaRepository`.
+- **Sugestão:** Aplicar Injeção de Dependência em todos os serviços. Os construtores devem **receber** as instâncias de suas dependências.
 
 ---
 
 ### Arquivo: `app/graphs/conversation_graph.py`
 
 - **Linha(s):** 27-28
-  - **Tipo:** Violação de Design Pattern (Injeção de Dependência)
-  - **Descrição:** `RetrievalService` e `RAGPipeline` são instanciados diretamente no construtor. Isso cria um forte acoplamento entre o grafo e as implementações concretas dos serviços. O grafo não deveria saber como construir suas dependências.
-  - **Sugestão:** Modificar o construtor para **receber** as instâncias dos serviços como argumentos (ex: `__init__(self, retrieval_service: RetrievalService, rag_pipeline: RAGPipeline)`). A `Factory` seria então responsável por criar e "injetar" essas dependências.
+- **Tipo:** Violação de Design Pattern (Injeção de Dependência)
+- **Descrição:** O grafo, que deveria apenas orquestrar a lógica, está fortemente acoplado à criação de suas dependências (`RetrievalService`, `RAGPipeline`).
+- **Sugestão:** Aplicar Injeção de Dependência no construtor, recebendo as instâncias dos serviços.
 
 ---
 
-### Arquivo: `app/repositories/chroma_repository.py`
+## Conclusão Final da Auditoria
 
-- **Linha(s):** 17
-  - **Tipo:** Violação Grave de Arquitetura de Camadas
-  - **Descrição:** O `ChromaRepository` (camada de persistência) instancia e depende diretamente do `EmbeddingsService` (camada de serviço). Esta é uma inversão de dependência incorreta. A camada de repositório nunca deve depender da camada de serviço. A responsabilidade de gerar o embedding antes de salvar deveria ser de um serviço.
-  - **Sugestão:** Refatorar o fluxo. Um serviço (ex: `IngestionService` ou um novo `StorageService`) deve chamar o `EmbeddingsService` para criar o vetor e, em seguida, passar o `Document` e o `Embedding` para o `ChromaRepository`, que teria a única responsabilidade de salvar os dados.
+A arquitetura do projeto está em um estado **crítico, mas corrigível**. A estrutura de arquivos e a intenção de separar as camadas são boas, mas a falha sistemática em aplicar a **Injeção de Dependência** e a **violação de responsabilidade no `ChromaRepository`** anulam os benefícios da modularidade, criando um sistema monolítico disfarçado de arquitetura em camadas.
 
-- **Linha(s):** 15
-  - **Tipo:** Má Prática
-  - **Descrição:** O nome da coleção `"qualichat"` está "hardcoded".
-  - **Sugestão:** Mover para o arquivo de configuração.
-
----
-
-### Arquivo: `app/repositories/history_repository.py`
-
-- **Linha(s):** Todo o arquivo
-  - **Tipo:** Risco / Má Prática
-  - **Descrição:** A implementação baseada em JSON (lendo e reescrevendo o arquivo inteiro a cada interação) é ineficiente, não escalável e propensa a corrupção de dados em cenários concorrentes.
-  - **Sugestão:** Substituir por um banco de dados `SQLite`. Isso forneceria transações ACID, performance muito superior e segurança contra corrupção de dados.
-
----
-
-### Arquivo: `app/services/ingestion_service.py`
-
-- **Linha(s):** 22-24
-  - **Tipo:** Violação de Design Pattern (Injeção de Dependência)
-  - **Descrição:** `DocumentRepository`, `ChromaRepository` e `DocumentFactory` são instanciados diretamente. O serviço está acoplado às suas dependências concretas.
-  - **Sugestão:** Aplicar Injeção de Dependência: passar as instâncias dos repositórios e da factory como argumentos no construtor.
-
----
-
-### Arquivo: `app/services/rag_pipeline.py`
-
-- **Linha(s):** 14-15
-  - **Tipo:** Violação de Design Pattern (Injeção de Dependência)
-  - **Descrição:** `RetrievalService` e `LLMService` são instanciados diretamente.
-  - **Sugestão:** Aplicar Injeção de Dependência no construtor.
-
----
-
-### Arquivo: `app/services/retrieval_service.py`
-
-- **Linha(s):** 12
-  - **Tipo:** Violação de Design Pattern (Injeção de Dependência)
-  - **Descrição:** `ChromaRepository` é instanciado diretamente.
-  - **Sugestão:** Aplicar Injeção de Dependência no construtor.
-
----
-
-### Arquivos sem Problemas Identificados
-- `app/core/config.py`
-- `app/core/logger.py`
-- `app/graphs/base_graph.py`
-- `app/models/document.py`
-- `app/models/embedding.py`
-- `app/models/history.py`
-- `app/repositories/base_repository.py` (além da sugestão de renomeação)
-- `app/repositories/document_repository.py`
-- `app/services/embeddings_service.py`
-- `app/services/llm_service.py`
-
----
-
-## Conclusão e Recomendações Prioritárias
-
-A auditoria revela que, embora as camadas estejam bem definidas estruturalmente, a **falha em aplicar consistentemente o padrão de Injeção de Dependência** é o problema arquitetural mais crítico. A instanciação direta de dependências em quase todas as classes de serviço e grafo criou um sistema fortemente acoplado, difícil de testar e manter.
-
-**Ações Imediatas Recomendadas:**
-1.  **Refatorar para Injeção de Dependência:** Modificar os construtores de todas as classes de serviço, grafo e repositório para receberem suas dependências, em vez de criá-las.
-2.  **Expandir a Factory:** Fazer com que a `ServiceFactory` seja responsável por construir a árvore de dependências completa e fornecer as instâncias de alto nível (como `ConversationGraph` e `IngestionService`) já com tudo injetado.
-3.  **Corrigir a Violação de Camada:** Mover a lógica de criação de embeddings para fora do `ChromaRepository`, fazendo com que um serviço orquestre a chamada ao `EmbeddingsService` e o salvamento no repositório.
-4.  **Centralizar o Patch do `sqlite3`:** Eliminar a duplicação de código.
-5.  **Substituir o `HistoryRepository`:** Migrar a persistência do histórico de JSON para SQLite.
+**Ações Corretivas Mandatórias:**
+1.  **Refatorar para Injeção de Dependência (DI) em toda a aplicação:** Nenhum serviço, grafo ou repositório deve instanciar suas próprias dependências. Elas devem ser passadas via construtor.
+2.  **Corrigir a Violação de Camada no `ChromaRepository`:** Mover a responsabilidade de gerar embeddings para a camada de serviço.
+3.  **Expandir a `Factory`:** Torná-la o "Composition Root" da aplicação, responsável por construir e conectar todos os componentes.
+4.  **Substituir a persistência do `HistoryRepository` para SQLite.**
+5.  **Centralizar o patch do `sqlite3` e as configurações "hardcoded".**
