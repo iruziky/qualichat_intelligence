@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Graph for managing conversations."""
-from typing import TypedDict, List
+from typing import TypedDict, List, Optional
 from langgraph.graph import StateGraph, END
 
 from app.graphs.base_graph import BaseGraph
@@ -15,6 +15,7 @@ class GraphState(TypedDict):
     context: str
     answer: str
     history: List[HistoryItem]
+    source_name: Optional[str]
 
 
 class ConversationGraph(BaseGraph):
@@ -32,17 +33,27 @@ class ConversationGraph(BaseGraph):
         """Retrieve context from the vector store."""
         question = state["question"]
         history = state.get("history", [])
-        context_documents = self.retrieval_service.retrieve_documents(question)
-        context = "\n".join(context_documents)
-        return {"context": context, "question": question, "history": history}
+        source_name = state.get("source_name")
+        context_documents = self.retrieval_service.retrieve_documents(
+            question, source_name=source_name
+        )
+        context = "\n".join([doc.content for doc in context_documents])
+        return {
+            "context": context,
+            "question": question,
+            "history": history,
+            "source_name": source_name,
+        }
 
     def generate_answer(self, state):
         """Generate an answer using the RAG pipeline."""
         question = state["question"]
         history = state.get("history", [])
-        answer = self.rag_pipeline.execute(question, history=history)
+        source_name = state.get("source_name")
+        answer = self.rag_pipeline.execute(
+            question, history=history, source_name=source_name
+        )
         return {"answer": answer}
-
 
     def build(self):
         """Build the graph."""
@@ -52,4 +63,5 @@ class ConversationGraph(BaseGraph):
         self.workflow.set_entry_point("retrieve_context")
         self.workflow.add_edge("retrieve_context", "generate_answer")
         self.workflow.add_edge("generate_answer", END)
+
 
