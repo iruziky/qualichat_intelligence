@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Graph for managing conversations."""
-from typing import TypedDict, Annotated
+from typing import TypedDict, Annotated, List, Dict, Any
 from langgraph.graph import StateGraph, END
 
 from app.graphs.base_graph import BaseGraph
@@ -13,6 +13,7 @@ class GraphState(TypedDict):
     question: str
     context: str
     answer: str
+    history: List[Dict[str, Any]]
 
 
 class ConversationGraph(BaseGraph):
@@ -29,15 +30,18 @@ class ConversationGraph(BaseGraph):
     def retrieve_context(self, state):
         """Retrieve context from the vector store."""
         question = state["question"]
+        history = state.get("history", [])
         context_documents = self.retrieval_service.retrieve_documents(question)
         context = "\n".join(context_documents)
-        return {"context": context, "question": question}
+        return {"context": context, "question": question, "history": history}
 
     def generate_answer(self, state):
         """Generate an answer using the RAG pipeline."""
         question = state["question"]
-        answer = self.rag_pipeline.execute(question)
+        history = state.get("history", [])
+        answer = self.rag_pipeline.execute(question, history=history)
         return {"answer": answer}
+
 
     def build(self):
         """Build the graph."""
