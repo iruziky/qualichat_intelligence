@@ -2,6 +2,7 @@
 """Factory for creating application components."""
 from app.services.llm_service import LLMService
 from app.services.embeddings_service import EmbeddingsService
+from app.repositories.history_repository import HistoryRepository
 
 
 class ServiceFactory:
@@ -34,3 +35,13 @@ class ServiceFactory:
         """
         # TODO: Implement dynamic provider selection
         return EmbeddingsService()
+
+    @staticmethod
+    def create_history_repository() -> HistoryRepository:
+        """
+        Create a history repository.
+
+        Returns:
+            An instance of HistoryRepository.
+        """
+        return HistoryRepository()
