@@ -11,4 +11,5 @@ class Document(BaseModel):
 
     id: str
     content: str
+    source_name: str
     metadata: Optional[Dict[str, Any]] = None
