@@ -2,21 +2,55 @@
   {
     "user_message": "olá",
     "bot_response": "Olá, como posso ajudá-lo hoje?",
-    "metadata": {}
+    "metadata": {},
+    "timestamp": "2025-10-23T00:17:22.407554"
   },
   {
     "user_message": "Qual foi minha última mensagem?",
     "bot_response": "Desculpe, como sou um modelo de inteligência artificial, não tenho acesso às suas mensagens anteriores. Você pode me fazer outra pergunta ou pedir algo?",
-    "metadata": {}
+    "metadata": {},
+    "timestamp": "2025-10-23T00:17:22.407567"
   },
   {
     "user_message": "Eu falei \"olá\" ou \"oi\"?",
     "bot_response": "Você disse \"olá\".",
-    "metadata": {}
+    "metadata": {},
+    "timestamp": "2025-10-23T00:17:22.407573"
   },
   {
     "user_message": "tem certeza? e depois disso?",
     "bot_response": "Desculpe, a sua pergunta após \"olá\" foi \"Qual foi minha última mensagem?\".",
-    "metadata": {}
+    "metadata": {},
+    "timestamp": "2025-10-23T00:17:22.407578"
+  },
+  {
+    "user_message": "XYW",
+    "bot_response": "Desculpe, a pergunta \"XYW\" não é clara para mim. Você poderia elaborar um pouco mais?",
+    "metadata": null,
+    "timestamp": "2025-10-23T00:17:22.407314"
+  },
+  {
+    "user_message": "Qual foi o código (em letras) que eu te mandei?",
+    "bot_response": "O código que você mandou foi \"XYW\".",
+    "metadata": null,
+    "timestamp": "2025-10-23T00:17:33.956203"
+  },
+  {
+    "user_message": "Vocês aceitam vaga de garagem como garantia?",
+    "bot_response": "Não, nos casos em que o apartamento possui vagas de garagem individualizadas, não é autorizado a alienação apenas da vaga de garagem. Deve ser alienado o apartamento junto com as vagas para garantir a liquidez da operação.\n",
+    "metadata": null,
+    "timestamp": "2025-10-23T00:41:25.507303"
+  },
+  {
+    "user_message": "O que vocês vendem?",
+    "bot_response": "Nós somos uma administradora que facilita transações e concessões de crédito para compra, construção ou reforma de imóveis, incluindo propriedades rurais produtivas, armazéns, aviários, confinamentos, represas para irrigação agrícola, entre outros. Também oferecemos opções para a compra de usinas de placas solares.",
+    "metadata": null,
+    "timestamp": "2025-10-23T00:41:47.437339"
+  },
+  {
+    "user_message": "o que vcs vendem",
+    "bot_response": "Desculpe pelo mal-entendido anterior, mas como modelo de inteligência artificial, na verdade não vendemos nada. Estou aqui para fornecer informações e responder perguntas da melhor maneira possível. Pelo que entendi do contexto fornecido, parece que há informações sobre compra e venda entre parentes, entre uma pessoa jurídica e um sócio, ou entre um sócio e uma pessoa jurídica. No entanto, a pergunta sobre o que é vendido não pode ser respondida especificamente com base nesse contexto.",
+    "metadata": null,
+    "timestamp": "2025-10-23T00:48:41.736957"
   }
 ]

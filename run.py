@@ -8,6 +8,12 @@ import sys
 
 sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
+# --- CONFIGURATION FOR TESTING ---
+# Set to a specific filename to filter RAG search, or None to search all documents.
+# Example: SOURCE_DOCUMENT = "my_document.pdf"
+SOURCE_DOCUMENT: str | None = "meu_documento.pdf"
+# ---------------------------------
+
 from app.graphs.conversation_graph import ConversationGraph
 from app.core.logger import logger
 from app.repositories.history_repository import HistoryRepository
@@ -17,6 +23,9 @@ from app.models.history import HistoryItem
 def main():
     """Starts an interactive session to chat with the agent."""
     logger.info("Initializing services...")
+    if SOURCE_DOCUMENT:
+        logger.info(f"Target document for RAG: {SOURCE_DOCUMENT}")
+
     try:
         history_repo = HistoryRepository()
         graph = ConversationGraph()
@@ -40,7 +49,11 @@ def main():
 
             # Get history from the repository
             chat_history = history_repo.get_history()
-            inputs = {"question": question, "history": chat_history}
+            inputs = {
+                "question": question,
+                "history": chat_history,
+                "source_name": SOURCE_DOCUMENT,
+            }
 
             print("Thinking...")
             result = app_runnable.invoke(inputs)

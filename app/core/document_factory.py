@@ -4,11 +4,10 @@ import uuid
 from pathlib import Path
 from typing import List, Dict, Callable
 
-from langchain.document_loaders import (
+from langchain_community.document_loaders import (
     TextLoader,
     PyPDFLoader,
     CSVLoader,
-    YAMLParser,
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app.models.document import Document
@@ -34,8 +33,8 @@ class DocumentFactory:
             ".md": TextLoader,
             ".pdf": PyPDFLoader,
             ".csv": CSVLoader,
-            ".yaml": YAMLParser,
-            ".yml": YAMLParser,
+            ".yaml": TextLoader,  # Treat YAML as plain text for simplicity
+            ".yml": TextLoader,
         }
 
     def create_documents(self, file_path: str) -> List[Document]:
