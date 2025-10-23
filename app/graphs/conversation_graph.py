@@ -21,10 +21,14 @@ class GraphState(TypedDict):
 class ConversationGraph(BaseGraph):
     """Manages the conversational flow using LangGraph."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        retrieval_service: RetrievalService,
+        rag_pipeline: RAGPipeline,
+    ):
         super().__init__()
-        self.retrieval_service = RetrievalService()
-        self.rag_pipeline = RAGPipeline()
+        self.retrieval_service = retrieval_service
+        self.rag_pipeline = rag_pipeline
 
     def _get_initial_state(self) -> dict:
         return GraphState

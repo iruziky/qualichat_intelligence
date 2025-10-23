@@ -5,7 +5,6 @@ from typing import List, Optional
 
 from app.core.config import settings
 from app.repositories.base_repository import BaseRepository
-from app.services.embeddings_service import EmbeddingsService
 from app.models.document import Document
 
 
@@ -15,18 +14,15 @@ class ChromaRepository(BaseRepository):
     def __init__(self, collection_name: str = "qualichat"):
         self.client = chromadb.PersistentClient(path=settings.VECTOR_DB_PATH)
         self.collection = self.client.get_or_create_collection(name=collection_name)
-        self.embeddings_service = EmbeddingsService()
 
-    def add(self, documents: List[Document]):
+    def add(self, documents: List[Document], embeddings: List[List[float]]):
         """
-        Add documents to the ChromaDB collection.
+        Add documents and their embeddings to the ChromaDB collection.
 
         Args:
             documents: A list of Document objects.
+            embeddings: A list of corresponding vector embeddings.
         """
-        texts = [doc.content for doc in documents]
-        embeddings = self.embeddings_service.create_embeddings(texts)
-        
         # Store source_name in metadata for filtering
         metadatas = []
         for doc in documents:
@@ -38,27 +34,28 @@ class ChromaRepository(BaseRepository):
 
         self.collection.add(
             embeddings=embeddings,
-            documents=texts,
+            documents=[doc.content for doc in documents],
             metadatas=metadatas,
             ids=ids,
         )
 
     def query(
-        self, query_text: str, top_k: int = 5, source_name: Optional[str] = None
+        self,
+        query_embedding: List[float],
+        top_k: int = 5,
+        source_name: Optional[str] = None,
     ) -> List[Document]:
         """
         Query the ChromaDB collection for similar documents.
 
         Args:
-            query_text: The text to search for.
+            query_embedding: The vector embedding of the query text.
             top_k: The number of results to return.
             source_name: Optional source name to filter the search.
 
         Returns:
             A list of Document objects that are similar to the query text.
         """
-        query_embedding = self.embeddings_service.create_embeddings([query_text])[0]
-        
         where_clause = {}
         if source_name:
             where_clause = {"source_name": source_name}

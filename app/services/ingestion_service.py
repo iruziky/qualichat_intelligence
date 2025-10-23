@@ -8,6 +8,7 @@ from typing import Dict
 from app.core.document_factory import DocumentFactory
 from app.repositories.chroma_repository import ChromaRepository
 from app.repositories.document_repository import DocumentRepository
+from app.services.embeddings_service import EmbeddingsService
 from app.core.logger import logger
 
 
@@ -16,12 +17,20 @@ class IngestionService:
     Orchestrates the ingestion of documents, processing only new or modified files.
     """
 
-    def __init__(self, user_id: str):
+    def __init__(
+        self,
+        user_id: str,
+        document_repo: DocumentRepository,
+        chroma_repo: ChromaRepository,
+        doc_factory: DocumentFactory,
+        embeddings_service: EmbeddingsService,
+    ):
         self.user_id = user_id
         self.manifest_path = Path(f"documents/{self.user_id}/ingestion_manifest.json")
-        self.document_repo = DocumentRepository()
-        self.chroma_repo = ChromaRepository()
-        self.doc_factory = DocumentFactory()
+        self.document_repo = document_repo
+        self.chroma_repo = chroma_repo
+        self.doc_factory = doc_factory
+        self.embeddings_service = embeddings_service
         self.manifest = self._load_manifest()
 
     def _load_manifest(self) -> Dict[str, str]:
@@ -68,11 +77,17 @@ class IngestionService:
                 continue
 
             logger.warning(f"'{doc_path.name}' is new or has been modified. Processing...")
-            
-            # Process and add to vector store
+
+            # Process file into documents
             documents = self.doc_factory.create_documents(str(doc_path))
             if documents:
-                self.chroma_repo.add(documents)
+                # Generate embeddings
+                contents = [doc.content for doc in documents]
+                embeddings = self.embeddings_service.create_embeddings(contents)
+
+                # Add to vector store
+                self.chroma_repo.add(documents, embeddings)
+
                 self.manifest[doc_path.name] = file_hash
                 processed_count += 1
                 logger.success(f"Processed and indexed '{doc_path.name}'.")

@@ -14,23 +14,22 @@ sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 SOURCE_DOCUMENT: str | None = "meu_documento.pdf"
 # ---------------------------------
 
-from app.graphs.conversation_graph import ConversationGraph
+from app.core.factory import AppFactory
 from app.core.logger import logger
-from app.repositories.history_repository import HistoryRepository
 from app.models.history import HistoryItem
 
 
 def main():
     """Starts an interactive session to chat with the agent."""
-    logger.info("Initializing services...")
+    logger.info("Initializing services via AppFactory...")
     if SOURCE_DOCUMENT:
         logger.info(f"Target document for RAG: {SOURCE_DOCUMENT}")
 
     try:
-        history_repo = HistoryRepository()
-        graph = ConversationGraph()
-        graph.build()
-        app_runnable = graph.compile()
+        # Use the factory to get components
+        history_repo = AppFactory.create_history_repository()
+        app_runnable = AppFactory.create_conversation_graph()
+        
         logger.info("Initialization complete. Ready for questions.")
         print("\n--- Qualichat Interactive Terminal ---")
         print("Type your question and press Enter. Type 'exit', 'quit', or 'clear'.")

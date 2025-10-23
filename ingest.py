@@ -7,7 +7,7 @@ __import__("pypika")
 __import__("pysqlite3")
 sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
-from app.services.ingestion_service import IngestionService
+from app.core.factory import AppFactory
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
     # this would come from an authentication layer.
     user_id = "default_user"
     
-    ingestion_service = IngestionService(user_id=user_id)
+    ingestion_service = AppFactory.create_ingestion_service(user_id=user_id)
     ingestion_service.run_ingestion()
 
 

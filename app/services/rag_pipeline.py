@@ -9,9 +9,13 @@ from app.models.history import HistoryItem
 class RAGPipeline:
     """Orchestrates the RAG pipeline."""
 
-    def __init__(self):
-        self.retrieval_service = RetrievalService()
-        self.llm_service = LLMService()
+    def __init__(
+        self,
+        retrieval_service: RetrievalService,
+        llm_service: LLMService,
+    ):
+        self.retrieval_service = retrieval_service
+        self.llm_service = llm_service
 
     def execute(
         self,

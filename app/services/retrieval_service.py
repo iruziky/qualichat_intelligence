@@ -2,14 +2,20 @@
 """Service for retrieving relevant documents."""
 from typing import List, Optional
 from app.repositories.chroma_repository import ChromaRepository
+from app.services.embeddings_service import EmbeddingsService
 from app.models.document import Document
 
 
 class RetrievalService:
     """Service for retrieving documents from the vector store."""
 
-    def __init__(self):
-        self.repository = ChromaRepository()
+    def __init__(
+        self,
+        repository: ChromaRepository,
+        embeddings_service: EmbeddingsService,
+    ):
+        self.repository = repository
+        self.embeddings_service = embeddings_service
 
     def retrieve_documents(
         self, query: str, top_k: int = 5, source_name: Optional[str] = None
@@ -25,7 +31,8 @@ class RetrievalService:
         Returns:
             A list of relevant Document objects.
         """
+        query_embedding = self.embeddings_service.create_embeddings([query])[0]
         return self.repository.query(
-            query_text=query, top_k=top_k, source_name=source_name
+            query_embedding=query_embedding, top_k=top_k, source_name=source_name
         )
 
