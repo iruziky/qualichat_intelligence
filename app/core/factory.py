@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """Factory for creating and composing application components."""
 
+# Apply patches at the very beginning of the application's composition root.
+from app.core.patches import apply_patches
+apply_patches()
+
 from app.services.llm_service import LLMService
 from app.services.embeddings_service import EmbeddingsService
 from app.services.retrieval_service import RetrievalService
@@ -11,6 +15,7 @@ from app.repositories.chroma_repository import ChromaRepository
 from app.repositories.document_repository import DocumentRepository
 from app.graphs.conversation_graph import ConversationGraph
 from app.core.document_factory import DocumentFactory
+from app.core.config import settings
 
 
 class AppFactory:
@@ -21,7 +26,7 @@ class AppFactory:
 
     @staticmethod
     def create_llm_service() -> LLMService:
-        return LLMService()
+        return LLMService(model=settings.DEFAULT_MODEL)
 
     @staticmethod
     def create_embeddings_service() -> EmbeddingsService:
@@ -29,7 +34,7 @@ class AppFactory:
 
     @staticmethod
     def create_chroma_repository() -> ChromaRepository:
-        return ChromaRepository()
+        return ChromaRepository(collection_name=settings.COLLECTION_NAME)
 
     @staticmethod
     def create_history_repository() -> HistoryRepository:
@@ -41,7 +46,10 @@ class AppFactory:
 
     @staticmethod
     def create_document_factory() -> DocumentFactory:
-        return DocumentFactory()
+        return DocumentFactory(
+            chunk_size=settings.CHUNK_SIZE,
+            chunk_overlap=settings.CHUNK_OVERLAP,
+        )
 
     @classmethod
     def create_retrieval_service(cls) -> RetrievalService:

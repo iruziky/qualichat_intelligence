@@ -11,7 +11,7 @@ from app.models.document import Document
 class ChromaRepository(BaseRepository):
     """Repository for ChromaDB vector store."""
 
-    def __init__(self, collection_name: str = "qualichat"):
+    def __init__(self, collection_name: str):
         self.client = chromadb.PersistentClient(path=settings.VECTOR_DB_PATH)
         self.collection = self.client.get_or_create_collection(name=collection_name)
 

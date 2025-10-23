@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 """Interactive terminal for testing the Qualichat Intelligence pipeline."""
 
-# Patch for ChromaDB compatibility
-__import__("pypika")
-__import__("pysqlite3")
-import sys
-
-sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
-
 # --- CONFIGURATION FOR TESTING ---
 # Set to a specific filename to filter RAG search, or None to search all documents.
 # Example: SOURCE_DOCUMENT = "my_document.pdf"

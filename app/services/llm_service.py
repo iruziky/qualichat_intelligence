@@ -7,8 +7,8 @@ from app.core.config import settings
 class LLMService:
     """Service to interact with LLMs using LiteLLM."""
 
-    def __init__(self, model: str = None):
-        self.model = model or settings.DEFAULT_MODEL
+    def __init__(self, model: str):
+        self.model = model
 
     def get_completion(self, messages: list[dict]) -> str:
         """

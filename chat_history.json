@@ -52,5 +52,11 @@
     "bot_response": "Desculpe pelo mal-entendido anterior, mas como modelo de inteligência artificial, na verdade não vendemos nada. Estou aqui para fornecer informações e responder perguntas da melhor maneira possível. Pelo que entendi do contexto fornecido, parece que há informações sobre compra e venda entre parentes, entre uma pessoa jurídica e um sócio, ou entre um sócio e uma pessoa jurídica. No entanto, a pergunta sobre o que é vendido não pode ser respondida especificamente com base nesse contexto.",
     "metadata": null,
     "timestamp": "2025-10-23T00:48:41.736957"
+  },
+  {
+    "user_message": "o que você sabe sobre usar garagem",
+    "bot_response": "Com base no contexto fornecido, na política da administradora, é vedada a alienação das vagas de garagem separadamente. Nos casos em que o apartamento possui vagas de garagem individualizadas, deve ser alienado tanto o apartamento quanto as vagas de garagem, para garantir a liquidez da operação. Além disso, de acordo com a Lei 12.607/2012, a alienação de vagas de garagem é proibida, a menos que exista uma autorização expressa do condomínio. Por essas razões, a administradora não autoriza a alienação de vagas de garagem independentes.",
+    "metadata": null,
+    "timestamp": "2025-10-23T01:07:48.398201"
   }
 ]

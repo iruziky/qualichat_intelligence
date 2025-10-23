@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
 """Script to run the intelligent ingestion process for a user."""
 
-# Patch for ChromaDB compatibility: must be applied before chromadb is imported.
-import sys
-__import__("pypika")
-__import__("pysqlite3")
-sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
-
 from app.core.factory import AppFactory
 
 
