@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """Script to run the intelligent ingestion process for a user."""
 
+# Apply patches before any other application imports
+from app.core.patches import apply_patches
+apply_patches()
+
 from app.core.factory import AppFactory
 
 

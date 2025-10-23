@@ -10,17 +10,18 @@ from app.core.logger import logger
 
 class HistoryRepository:
     """
-    Manages the persistence of conversation history in a local SQLite database.
+    Manages the persistence of conversation history in a user-specific SQLite database.
     """
 
-    def __init__(self, db_path: str = "chat_history.db"):
+    def __init__(self, user_id: str, db_folder: str = "history"):
         """
-        Initializes the repository and ensures the database and table exist.
+        Initializes the repository for a specific user.
 
         Args:
-            db_path: The path to the SQLite database file.
+            user_id: The unique identifier for the user.
+            db_folder: The folder where user history databases are stored.
         """
-        self.db_path = Path(db_path)
+        self.db_path = Path(db_folder) / f"user_{user_id}.db"
         self._conn = None
         self._ensure_db_exists()
 

@@ -7,7 +7,7 @@ from typing import Dict
 
 from app.core.document_factory import DocumentFactory
 from app.repositories.chroma_repository import ChromaRepository
-from app.repositories.document_repository import DocumentRepository
+from app.models.user import User
 from app.services.embeddings_service import EmbeddingsService
 from app.core.logger import logger
 
@@ -19,15 +19,13 @@ class IngestionService:
 
     def __init__(
         self,
-        user_id: str,
-        document_repo: DocumentRepository,
+        user: User,
         chroma_repo: ChromaRepository,
         doc_factory: DocumentFactory,
         embeddings_service: EmbeddingsService,
     ):
-        self.user_id = user_id
-        self.manifest_path = Path(f"documents/{self.user_id}/ingestion_manifest.json")
-        self.document_repo = document_repo
+        self.user = user
+        self.manifest_path = Path(f"documents/{self.user.id}/ingestion_manifest.json")
         self.chroma_repo = chroma_repo
         self.doc_factory = doc_factory
         self.embeddings_service = embeddings_service
@@ -63,8 +61,8 @@ class IngestionService:
         It finds all documents, checks them against the manifest,
         and processes only the new or updated ones.
         """
-        logger.info(f"Starting ingestion process for user: {self.user_id}")
-        all_docs = self.document_repo.get_user_documents(self.user_id)
+        logger.info(f"Starting ingestion process for user: {self.user.id}")
+        all_docs = self.user.get_documents()
         processed_count = 0
 
         for doc_path in all_docs:

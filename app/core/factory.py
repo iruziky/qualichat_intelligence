@@ -16,6 +16,7 @@ from app.repositories.document_repository import DocumentRepository
 from app.graphs.conversation_graph import ConversationGraph
 from app.core.document_factory import DocumentFactory
 from app.core.config import settings
+from app.repositories.user_repository import UserRepository
 
 
 class AppFactory:
@@ -37,10 +38,6 @@ class AppFactory:
         return ChromaRepository(collection_name=settings.COLLECTION_NAME)
 
     @staticmethod
-    def create_history_repository() -> HistoryRepository:
-        return HistoryRepository()
-
-    @staticmethod
     def create_document_repository() -> DocumentRepository:
         return DocumentRepository()
 
@@ -50,6 +47,10 @@ class AppFactory:
             chunk_size=settings.CHUNK_SIZE,
             chunk_overlap=settings.CHUNK_OVERLAP,
         )
+
+    @classmethod
+    def create_user_repository(cls) -> UserRepository:
+        return UserRepository(document_repo=cls.create_document_repository())
 
     @classmethod
     def create_retrieval_service(cls) -> RetrievalService:
@@ -76,9 +77,11 @@ class AppFactory:
 
     @classmethod
     def create_ingestion_service(cls, user_id: str) -> IngestionService:
+        user_repo = cls.create_user_repository()
+        user = user_repo.get_by_id(user_id)
+
         return IngestionService(
-            user_id=user_id,
-            document_repo=cls.create_document_repository(),
+            user=user,
             chroma_repo=cls.create_chroma_repository(),
             doc_factory=cls.create_document_factory(),
             embeddings_service=cls.create_embeddings_service(),
