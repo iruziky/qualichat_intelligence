@@ -3,7 +3,6 @@
 from typing import List, Optional
 from app.services.retrieval_service import RetrievalService
 from app.services.llm_service import LLMService
-from app.models.history import HistoryItem
 
 
 class RAGPipeline:
@@ -20,7 +19,7 @@ class RAGPipeline:
     def execute(
         self,
         query: str,
-        history: List[HistoryItem] = None,
+        history: List = None,
         source_name: Optional[str] = None,
     ) -> str:
         """
@@ -52,11 +51,15 @@ class RAGPipeline:
 
         messages = []
         if history:
+            from langchain_core.messages import HumanMessage
+
             for interaction in history:
-                messages.append({"role": "user", "content": interaction.user_message})
-                messages.append(
-                    {"role": "assistant", "content": interaction.bot_response}
-                )
+                if isinstance(interaction, HumanMessage):
+                    messages.append({"role": "user", "content": interaction.content})
+                else:  # Assumes AIMessage
+                    messages.append(
+                        {"role": "assistant", "content": interaction.content}
+                    )
 
         messages.append({"role": "user", "content": prompt})
         answer = self.llm_service.get_completion(messages)

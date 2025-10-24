@@ -67,8 +67,9 @@ class AppFactory:
         )
 
     @classmethod
-    def create_conversation_graph(cls) -> ConversationGraph:
+    def create_conversation_graph(cls):
         graph = ConversationGraph(
+            llm_service=cls.create_llm_service(),
             retrieval_service=cls.create_retrieval_service(),
             rag_pipeline=cls.create_rag_pipeline(),
         )

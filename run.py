@@ -14,6 +14,7 @@ USER_ID = "default_user"
 
 from app.core.factory import AppFactory
 from app.core.logger import logger
+from langchain_core.messages import HumanMessage, AIMessage
 
 
 def main():
@@ -48,15 +49,20 @@ def main():
 
             # Get history directly from the user object
             chat_history = user.get_history()
+            messages = []
+            for item in chat_history:
+                messages.append(HumanMessage(content=item.user_message))
+                messages.append(AIMessage(content=item.bot_response))
+            
+            messages.append(HumanMessage(content=question))
+
             inputs = {
-                "question": question,
-                "history": chat_history,
-                "source_name": SOURCE_DOCUMENT,
+                "messages": messages,
             }
 
             print("Thinking...")
             result = app_runnable.invoke(inputs)
-            answer = result.get("answer", "No answer found.")
+            answer = result["messages"][-1].content
 
             # Save the new interaction via the user object
             user.add_interaction(user_message=question, bot_response=answer)
