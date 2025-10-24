@@ -23,9 +23,10 @@ class IngestionService:
         chroma_repo: ChromaRepository,
         doc_factory: DocumentFactory,
         embeddings_service: EmbeddingsService,
+        base_doc_path: str = "documents",
     ):
         self.user = user
-        self.manifest_path = Path(f"documents/{self.user.id}/ingestion_manifest.json")
+        self.manifest_path = Path(base_doc_path) / self.user.id / "ingestion_manifest.json"
         self.chroma_repo = chroma_repo
         self.doc_factory = doc_factory
         self.embeddings_service = embeddings_service

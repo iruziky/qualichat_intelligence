@@ -85,4 +85,5 @@ class AppFactory:
             chroma_repo=cls.create_chroma_repository(),
             doc_factory=cls.create_document_factory(),
             embeddings_service=cls.create_embeddings_service(),
+            base_doc_path="documents",  # Pass the base path here
         )
